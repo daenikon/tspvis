@@ -1,29 +1,43 @@
 import React from "react";
-import "leaflet/dist/leaflet.css"; // Import Leaflet's CSS
-import "./index.css"; // Import updated custom styles
-import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import "./index.css";
+import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from "react-leaflet";
 
 function App() {
+    const MapClickLogger = () => {
+        useMapEvents({
+          click: (e) => {
+            console.log("Coordinates clicked:", e.latlng);
+          },
+        });
+        return null; // to not render any ui
+    };
+
   return (
     <div>
-      <h1 style={{ textAlign: "center", margin: "20px 0" }}>
-        Leaflet Map Example
-      </h1>
+      <h2 style={{ textAlign: "center", margin: "20px 0" }}>
+        TSP Visualizer
+      </h2>
       <MapContainer
-        center={[51.505, -0.09]} // Initial center of the map
-        zoom={13} // Initial zoom level
-        scrollWheelZoom={true} // Enable scroll zoom
-        className="leaflet-container" // Ensures the correct CSS class is applied
+        center={[49.872872197840614, 8.651154041290285]}
+        zoom={4}
+        scrollWheelZoom={true}
+        className="leaflet-container"
       >
         <TileLayer
+            detectRetina={true}
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            //url="https://cartodb-basemaps-a.global.ssl.fastly.net/rastertiles/voyager/{z}/{x}/{y}.png" // Minimalist tile
+            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png"
+
+
         />
-        <Marker position={[51.505, -0.09]}>
+        <Marker position={[49.87384368679525, 8.631659746170046]}>
           <Popup>
-            A pretty CSS3 popup. <br /> Easily customizable.
+            Studienkolleg
           </Popup>
         </Marker>
+        <MapClickLogger/>
       </MapContainer>
     </div>
   );
