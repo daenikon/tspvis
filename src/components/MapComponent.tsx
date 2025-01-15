@@ -61,6 +61,11 @@ const MapComponent: React.FC<{ sidebarOpen: boolean }> = ({ sidebarOpen }) => {
 
   const canvasRenderer = L.canvas();
 
+  const verticalBounds = L.latLngBounds(
+    L.latLng(-60, -180),
+    L.latLng(85, 180)
+  );
+
   return (
     <MapContainer
       center={[49.872872197840614, 8.651154041290285]}
@@ -68,6 +73,10 @@ const MapComponent: React.FC<{ sidebarOpen: boolean }> = ({ sidebarOpen }) => {
       scrollWheelZoom={true}
       className="leaflet-container"
       style={{ height: "100%", width: "100%" }}
+      worldCopyJump={true}
+      maxBounds={verticalBounds}
+      maxBoundsViscosity={0.5}
+      minZoom={3}
     >
       <TileLayer
         detectRetina={true}
