@@ -1,6 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import "leaflet/dist/leaflet.css";
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents, Polyline, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Polyline,
+  useMapEvents,
+  ZoomControl,
+} from "react-leaflet";
 import L from "leaflet";
 
 interface MarkerData {
@@ -8,107 +16,154 @@ interface MarkerData {
   lng: number;
 }
 
-interface LineData {
-  start: MarkerData;
-  end: MarkerData;
-}
-
-// Create a custom DivIcon
-const createCustomIcon = (): L.DivIcon =>
+const createStartingNodeIcon = (): L.DivIcon =>
   L.divIcon({
-    className: "custom-marker-icon",
-    html: '<div style="font-size: 24px; color: white;">&#9679;</div>',
-    iconSize: [30, 30],
-    iconAnchor: [15, 15],
+    className: "custom-starting-node-icon",
+    html: '<div style="font-size: 24px; color: lime;">&#9679;</div>',
+    iconAnchor: [8, 20],
   });
 
-const ResizeMap: React.FC<{ sidebarOpen: boolean }> = ({ sidebarOpen }) => {
-  const map = useMap();
+const createNormalNodeIcon = (): L.DivIcon =>
+  L.divIcon({
+    className: "custom-normal-node-icon",
+    html: '<div style="font-size: 24px; color: white;">&#9679;</div>',
+    iconAnchor: [8, 20],
+  });
 
-  useEffect(() => {
-    // Invalidate the map size when sidebarOpen changes
-    setTimeout(() => {
-      map.invalidateSize();
-    }, 300); // Delay to match sidebar animation
-  }, [sidebarOpen, map]);
+const calculateDistance = (a: MarkerData, b: MarkerData): number => {
+  // Pythagorean distance: using lat and lng differences as straight-line
+  const latDiff = b.lat - a.lat;
+  const lngDiff = b.lng - a.lng;
+  return Math.sqrt(latDiff * latDiff + lngDiff * lngDiff);
+};
 
-  return null;
+const permute = (array: number[]): number[][] => {
+  if (array.length <= 1) return [array];
+  const result: number[][] = [];
+  for (let i = 0; i < array.length; i++) {
+    const rest = permute(array.slice(0, i).concat(array.slice(i + 1)));
+    for (const perm of rest) {
+      result.push([array[i], ...perm]);
+    }
+  }
+  return result;
+};
+
+const bruteForceTSP = (markers: MarkerData[]): number[][] => {
+  if (markers.length < 2) return [];
+  const indices = markers.map((_, index) => index);
+  const permutations = permute(indices.slice(1));
+  let minDistance = Infinity;
+  let bestPath: number[] = [];
+
+  for (const perm of permutations) {
+    const path = [0, ...perm, 0];
+    let totalDistance = 0;
+
+    for (let i = 0; i < path.length - 1; i++) {
+      totalDistance += calculateDistance(
+        markers[path[i]],
+        markers[path[i + 1]]
+      );
+    }
+
+    if (totalDistance < minDistance) {
+      minDistance = totalDistance;
+      bestPath = path;
+    }
+  }
+
+  return bestPath.map((_, i) => [bestPath[i], bestPath[i + 1]]).slice(0, -1);
 };
 
 const MapComponent: React.FC<{ sidebarOpen: boolean }> = ({ sidebarOpen }) => {
   const [markers, setMarkers] = useState<MarkerData[]>([]);
-  const [lines, setLines] = useState<LineData[]>([]);
+  const [polylines, setPolylines] = useState<number[][]>([]);
 
   const MapClickHandler: React.FC = () => {
     useMapEvents({
       click: (e) => {
         const { lat, lng } = e.latlng;
-
-        setMarkers((prevMarkers) => {
-          const newMarkers = [...prevMarkers, { lat, lng }];
-
-          if (newMarkers.length > 1) {
-            const prevMarker = newMarkers[newMarkers.length - 2];
-            setLines((prevLines) => [...prevLines, { start: prevMarker, end: { lat, lng } }]);
-          }
-
-          return newMarkers;
-        });
+        setMarkers((prevMarkers) => [...prevMarkers, { lat, lng }]);
       },
     });
     return null;
   };
 
-  const canvasRenderer = L.canvas();
-
-  const verticalBounds = L.latLngBounds(
-    L.latLng(-60, -180),
-    L.latLng(85, 180)
-  );
+  const runTSP = () => {
+    if (markers.length > 1) {
+      const path = bruteForceTSP(markers);
+      setPolylines(path);
+    } else {
+      alert("Add at least 2 markers to run TSP.");
+    }
+  };
 
   return (
-    <MapContainer
-      center={[49.872872197840614, 8.651154041290285]}
-      zoom={6}
-      scrollWheelZoom={true}
-      className="leaflet-container"
-      style={{ height: "100%", width: "100%" }}
-      worldCopyJump={true}
-      maxBounds={verticalBounds}
-      maxBoundsViscosity={0.5}
-      minZoom={3}
-    >
-      <TileLayer
-        detectRetina={true}
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png"
-      />
-
-      {/* Render markers */}
-      {markers.map((marker, index) => (
-        <Marker key={index} position={[marker.lat, marker.lng]} icon={createCustomIcon()}>
-          <Popup>
-            Marker at [{marker.lat.toFixed(5)}, {marker.lng.toFixed(5)}]
-          </Popup>
-        </Marker>
-      ))}
-
-      {/* Render polylines with canvas renderer */}
-      {lines.map((line, index) => (
-        <Polyline
-          key={index}
-          pathOptions={{ color: "red" }}
-          positions={[
-            [line.start.lat, line.start.lng],
-            [line.end.lat, line.end.lng],
-          ]}
-          renderer={canvasRenderer}
+    <div style={{ position: "relative", height: "100vh" }}>
+      <MapContainer
+        center={[49.872872197840614, 8.651154041290285]}
+        zoom={6}
+        scrollWheelZoom={true}
+        className="leaflet-container"
+        style={{ height: "100%", width: "100%" }}
+        zoomControl={false}
+      >
+        <TileLayer
+          detectRetina={true}
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png"
         />
-      ))}
 
-      <MapClickHandler />
-      <ResizeMap sidebarOpen={sidebarOpen} />
-    </MapContainer>
+        <ZoomControl position="topright" />
+
+        {markers.map((marker, index) => (
+          <Marker
+            key={index}
+            position={[marker.lat, marker.lng]}
+            icon={
+              index === 0 ? createStartingNodeIcon() : createNormalNodeIcon()
+            }
+          >
+            <Popup>
+              {index === 0
+                ? "Start Node"
+                : `Marker at [${marker.lat.toFixed(5)}, ${marker.lng.toFixed(5)}]`}
+            </Popup>
+          </Marker>
+        ))}
+
+        {polylines.map(([from, to], index) => (
+          <Polyline
+            key={index}
+            positions={[
+              [markers[from].lat, markers[from].lng],
+              [markers[to].lat, markers[to].lng],
+            ]}
+            pathOptions={{ color: "gray" }}
+          />
+        ))}
+
+        <MapClickHandler />
+      </MapContainer>
+
+      <button
+        onClick={runTSP}
+        style={{
+          position: "absolute",
+          top: 20,
+          left: 20,
+          zIndex: 1000,
+          padding: "10px 20px",
+          backgroundColor: "lime",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
+        }}
+      >
+        Run
+      </button>
+    </div>
   );
 };
 

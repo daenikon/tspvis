@@ -92,3 +92,7 @@
 .app-sidebar {
   position: absolute;
 }
+
+.custom-marker-icon {
+  color: red;
+}

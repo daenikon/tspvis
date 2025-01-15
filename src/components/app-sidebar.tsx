@@ -12,6 +12,8 @@ import {
   SquareTerminal,
 } from "lucide-react"
 
+import { Play } from 'lucide-react';
+
 import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
@@ -24,6 +26,8 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 
+import { Button } from "@/components/ui/button"
+
 // This is sample data.
 const data = {
   user: {
@@ -33,19 +37,19 @@ const data = {
   },
   teams: [
     {
-      name: "Acme Inc",
+      name: "Brute force",
       logo: GalleryVerticalEnd,
-      plan: "Enterprise",
+      plan: "O(n^2)",
     },
     {
-      name: "Acme Corp.",
+      name: "Nearest Neighbour",
       logo: AudioWaveform,
-      plan: "Startup",
+      plan: "O(n^3)",
     },
     {
-      name: "Evil Corp.",
+      name: "Random",
       logo: Command,
-      plan: "Free",
+      plan: "O(n^4)",
     },
   ],
   navMain: [
@@ -161,11 +165,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+      {/* <NavMain items={data.navMain} />
+        <NavProjects projects={data.projects} /> */}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <Button variant="outline" className="mx-16">
+            <Play /> Run
+        </Button>
+        {/* <NavUser user={data.user} /> */}
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
