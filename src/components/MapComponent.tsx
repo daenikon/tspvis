@@ -64,10 +64,10 @@ const MapComponent: React.FC<{ sidebarOpen: boolean }> = ({ sidebarOpen }) => {
   return (
     <MapContainer
       center={[49.872872197840614, 8.651154041290285]}
-      zoom={4}
+      zoom={6}
       scrollWheelZoom={true}
       className="leaflet-container"
-      style={{ height: "100vh", width: "100%" }}
+      style={{ height: "100%", width: "100%" }}
     >
       <TileLayer
         detectRetina={true}
