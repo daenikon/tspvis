@@ -19,8 +19,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ markers, setMarkers, polyli
     click:  (e) => {
       const { lat, lng } = e.latlng;
 
-      if (selectedAlgorithm === "brute-force" && markers.length >= 10) {
-        alert("Maximum 10 markers allowed for brute force algorithm.");
+      if (selectedAlgorithm === "brute-force" && markers.length >= 11) {
+        alert("Maximum 11 markers allowed for brute force algorithm.");
         return;
       }
 
@@ -55,7 +55,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ markers, setMarkers, polyli
           icon={index === 0 ? createStartingNodeIcon() : createNormalNodeIcon()}
         >
           <Popup>
-            {index === 0 ? "Start Node" : `Marker at [${marker.lat.toFixed(5)}, ${marker.lng.toFixed(5)}]`}
+            {index === 0 ? "Start Node" : `[${marker.lat.toFixed(5)}, ${marker.lng.toFixed(5)}]`}
           </Popup>
         </Marker>
       ))}
