@@ -28,28 +28,35 @@ export default function Page() {
     setPolylines([]);
   };
 
-  const fetchPolylines = async () => {
-    if (markers.length > 2) {
-      if (selectedAlgorithm === "brute-force" && markers.length > 10) {
-        alert("Maximum 10 markers allowed for brute force algorithm.");
-        return;
-      }
+const [executionTime, setExecutionTime] = useState<number | null>(null);
 
-      try {
-        const response = await axios.post(
-          `http://localhost:8080/api/tsp/${selectedAlgorithm}`,
-          markers
-        );
-
-        console.log(response.data);
-        setPolylines(response.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    } else {
-      alert("Add at least 3 markers to run TSP.");
+const fetchPolylines = async () => {
+  if (markers.length > 2) {
+    if (selectedAlgorithm === "brute-force" && markers.length > 11) {
+      alert("Maximum 11 markers allowed for brute force algorithm.");
+      return;
     }
-  };
+
+    try {
+      const startTime = performance.now();
+
+      const response = await axios.post(
+        `http://localhost:8080/api/tsp/${selectedAlgorithm}`,
+        markers
+      );
+
+      const endTime = performance.now();
+      setExecutionTime(endTime - startTime);
+
+      console.log(response.data);
+      setPolylines(response.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  } else {
+    alert("Add at least 3 markers to run TSP.");
+  }
+};
 
   return (
     <SidebarProvider>
@@ -57,22 +64,20 @@ export default function Page() {
         runTSP={fetchPolylines}
         setSelectedAlgorithm={setSelectedAlgorithm}
         resetMap={resetMap}
+        markers={markers}
+        selectedAlgorithm={selectedAlgorithm}
+        executionTime={executionTime}
       />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">
+                  <BreadcrumbLink href="https://de.wikipedia.org/wiki/Problem_des_Handlungsreisenden">
                     Traveling Salesman Problem
                   </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Data Fetching</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
