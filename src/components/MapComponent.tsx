@@ -3,7 +3,6 @@ import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, ZoomControl, Polyline, Marker, Popup } from "react-leaflet";
 import { useMapEvents } from "react-leaflet";
 
-// Utils
 import { createStartingNodeIcon, createNormalNodeIcon } from "../utils/createIcons";
 
 interface MapComponentProps {
@@ -11,43 +10,27 @@ interface MapComponentProps {
   setMarkers: React.Dispatch<React.SetStateAction<{ lat: number; lng: number }[]>>;
   polylines: number[][];
   setPolylines: React.Dispatch<React.SetStateAction<number[][]>>;
+  selectedAlgorithm: "brute-force" | "nearest-neighbor";
 }
 
-const MapComponent: React.FC<MapComponentProps> = ({ markers, setMarkers, polylines }) => {
-const MapClickHandler: React.FC = () => {
+const MapComponent: React.FC<MapComponentProps> = ({ markers, setMarkers, polylines, selectedAlgorithm }) => {
+  const MapClickHandler: React.FC = () => {
   useMapEvents({
-    click: async (e) => {
+    click:  (e) => {
       const { lat, lng } = e.latlng;
 
-      // Add new marker to the state
-      setMarkers((prevMarkers) => [...prevMarkers, { lat, lng }]);
-
-      // Send the markers data to the backend for processing
-      try {
-        const response = await fetch('http://localhost:8080/api/nearestNeighbor', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ points: [...markers, { lat, lng }] }), // Send updated markers list
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Response from backend:', data); // Log the response from the backend
-        } else {
-          console.error('Failed to fetch data from backend');
-        }
-      } catch (error) {
-        console.error('Error making the request:', error);
+      if (selectedAlgorithm === "brute-force" && markers.length >= 10) {
+        alert("Maximum 10 markers allowed for brute force algorithm.");
+        return;
       }
 
-      console.log('Current markers:', markers);
+      setMarkers((prevMarkers) => [...prevMarkers, { lat, lng }]);
+      //console.log('Current markers:', markers);
     },
   });
 
   return null;
-};
+  };
 
   return (
     <MapContainer

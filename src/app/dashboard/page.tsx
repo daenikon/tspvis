@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useState } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import {
@@ -15,29 +16,39 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import MapComponent from "@/components/MapComponent";
-import { bruteForceTSP } from "@/utils/algorithms/bruteForce";
-import { nearestNeighborTSP } from "@/utils/algorithms/nearestNeighbor";
 
 export default function Page() {
   const [markers, setMarkers] = useState<{ lat: number; lng: number }[]>([]);
   const [polylines, setPolylines] = useState<number[][]>([]);
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState<"bruteForce" | "nearestNeighbor">("bruteForce");
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState<"brute-force" | "nearest-neighbor">("brute-force");
 
-  const runTSP = () => {
-    if (markers.length > 2) {
-      const path =
-        selectedAlgorithm === "bruteForce"
-          ? bruteForceTSP(markers)
-          : nearestNeighborTSP(markers);
-      setPolylines(path);
-    } else {
-      alert("Add at least 3 markers to run TSP.");
+
+const fetchPolylines = async () => {
+  if (markers.length > 2) {
+    if (selectedAlgorithm === "brute-force" && markers.length > 10) {
+      alert("Maximum 10 markers allowed for brute force algorithm.");
+      return;
     }
-  };
+
+    try {
+      const response = await axios.post(
+        `http://localhost:8080/api/tsp/${selectedAlgorithm}`,
+        markers
+      );
+
+      console.log(response.data);
+      setPolylines(response.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  } else {
+    alert("Add at least 3 markers to run TSP.");
+  }
+};
 
   return (
     <SidebarProvider>
-      <AppSidebar runTSP={runTSP} setSelectedAlgorithm={setSelectedAlgorithm} />
+      <AppSidebar runTSP={fetchPolylines} setSelectedAlgorithm={setSelectedAlgorithm} />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">
@@ -64,6 +75,7 @@ export default function Page() {
             setMarkers={setMarkers}
             polylines={polylines}
             setPolylines={setPolylines}
+            selectedAlgorithm={selectedAlgorithm} // Pass selected algorithm to MapComponent
           />
         </div>
       </SidebarInset>

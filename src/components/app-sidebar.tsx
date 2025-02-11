@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   runTSP: () => void;
-  setSelectedAlgorithm: (algorithm: "bruteForce" | "nearestNeighbor") => void;
+  setSelectedAlgorithm: (algorithm: "brute-force" | "nearest-neighbor") => void;
 }
 
 const data = {
@@ -26,26 +26,26 @@ const data = {
       name: "Brute force",
       logo: Waypoints,
       efficiency: "O(n!)",
-      key: "bruteForce",
+      key: "brute-force",
     },
     {
       name: "Nearest Neighbour",
       logo: Route,
       efficiency: "O(n^2)",
-      key: "nearestNeighbor",
+      key: "nearest-neighbor",
     },
   ],
 };
 
 export function AppSidebar({ runTSP, setSelectedAlgorithm, ...props }: AppSidebarProps) {
-  const handleTeamChange = (selectedTeam: string) => {
-    setSelectedAlgorithm(selectedTeam as "bruteForce" | "nearestNeighbor");
+  const handleAlgorithmChange = (selectedAlgorithm: string) => {
+    setSelectedAlgorithm(selectedAlgorithm as "brute-force" | "nearest-neighbor");
   };
 
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <AlgorithmSwitcher algorithms={data.algorithms} onChange={handleTeamChange} />
+        <AlgorithmSwitcher algorithms={data.algorithms} onChange={handleAlgorithmChange} />
       </SidebarHeader>
       <SidebarContent>
         {/* Navigation or project-related UI elements */}
