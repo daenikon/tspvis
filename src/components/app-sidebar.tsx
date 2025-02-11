@@ -4,7 +4,6 @@ import {
   Command,
   Waypoints,
 } from "lucide-react";
-
 import { Play } from "lucide-react";
 import { AlgorithmSwitcher } from "@/components/algorithm-switcher";
 import {
@@ -18,6 +17,7 @@ import { Button } from "@/components/ui/button";
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   runTSP: () => void;
   setSelectedAlgorithm: (algorithm: "brute-force" | "nearest-neighbor") => void;
+  resetMap: () => void;
 }
 
 const data = {
@@ -37,7 +37,7 @@ const data = {
   ],
 };
 
-export function AppSidebar({ runTSP, setSelectedAlgorithm, ...props }: AppSidebarProps) {
+export function AppSidebar({ runTSP, setSelectedAlgorithm, resetMap, ...props }: AppSidebarProps) {
   const handleAlgorithmChange = (selectedAlgorithm: string) => {
     setSelectedAlgorithm(selectedAlgorithm as "brute-force" | "nearest-neighbor");
   };
@@ -48,11 +48,13 @@ export function AppSidebar({ runTSP, setSelectedAlgorithm, ...props }: AppSideba
         <AlgorithmSwitcher algorithms={data.algorithms} onChange={handleAlgorithmChange} />
       </SidebarHeader>
       <SidebarContent>
-        {/* Navigation or project-related UI elements */}
       </SidebarContent>
       <SidebarFooter>
         <Button variant="outline" className="mx-16" onClick={runTSP}>
           <Play /> Run
+        </Button>
+        <Button variant="outline" className="mx-16 mt-2" onClick={resetMap}>
+          Clear All
         </Button>
       </SidebarFooter>
     </Sidebar>
